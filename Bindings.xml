@@ -1,0 +1,5 @@
+<Bindings>
+    <Binding category="BINDING_HEADER_MARK_AND_PING" name="MARK_AND_PING_KEY">
+        MarkAndNotify("mouseover")
+    </Binding>
+</Bindings>
