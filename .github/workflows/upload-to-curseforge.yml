@@ -18,23 +18,29 @@ jobs:
             - name: Get repository name
               run: echo "repo_name=$(basename ${{ github.repository }})" >> $GITHUB_ENV
 
-            # 3. Leer la versión del archivo .toc
-            - name: Extract version and interface from .toc
+            # 3. Leer la versión del archivo .toc y convertir interface a game_versions
+            - name: Extract version and format game versions
               run: |
                   version=$(grep -Po "(?<=## Version: )\d+\.\d+\.\d+" ${{ env.repo_name }}.toc)
                   interface=$(grep -Po "(?<=## Interface: )\d+" ${{ env.repo_name }}.toc)
+                  major=$((interface / 10000))
+                  minor=$(( (interface % 10000) / 100 ))
+                  patch=$((interface % 100))
+                  game_version="${major}.${minor}.${patch}"
                   echo "addon_version=$version" >> $GITHUB_ENV
-                  echo "interface_version=$interface" >> $GITHUB_ENV
+                  echo "game_version=$game_version" >> $GITHUB_ENV
 
             # 4. Crear el archivo ZIP con el formato "nombre-versión.zip"
             - name: Create addon ZIP
               run: |
                   zip -r "${{ env.repo_name }}-${{ env.addon_version }}.zip" . \
-                    --exclude "*/.git*" "*/README.md"
+                    --exclude "*/.git*" "*/README.md" "*/CHANGELOG.md"
 
-            # 5. Obtener el mensaje del último commit como changelog
-            - name: Get commit message for changelog
-              run: echo "changelog=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+            # 5. Leer el contenido del archivo CHANGELOG.md
+            - name: Read CHANGELOG.md
+              run: |
+                  changelog=$(cat CHANGELOG.md)
+                  echo "changelog=$changelog" >> $GITHUB_ENV
 
             # 6. Subir el archivo ZIP a CurseForge
             - name: Upload to CurseForge
@@ -43,8 +49,8 @@ jobs:
                   token: ${{ secrets.CURSEFORGE_API_KEY }}
                   project_id: ${{ secrets.CURSEFORGE_PROJECT_ID }}
                   game_endpoint: "wow"
-                  game_versions: "1.15.5"
+                  game_versions: "${{ env.game_version }}"
                   file_path: "${{ env.repo_name }}-${{ env.addon_version }}.zip"
-                  changelog: "- ${{ env.changelog }}"
+                  changelog: "${{ env.changelog }}"
                   changelog_type: markdown
                   release_type: release

@@ -1,6 +1,6 @@
 ## Interface: 11505
 ## Title: Mark and Ping
-## Version: 1.0.0
+## Version: 1.0.1
 ## Notes: Marks an NPC with a raid marker and plays a ping sound.
 ## Author: StarkzXP1
 ## SavedVariables: MarkAndPingDB
