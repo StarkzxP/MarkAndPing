@@ -3,22 +3,22 @@ name: Upload to CurseForge
 on:
     push:
         branches:
-            - main # Cambia si usas otra rama principal
+            - main # Change this if you use a different main branch
 
 jobs:
     upload-addon:
         runs-on: ubuntu-latest
 
         steps:
-            # 1. Descarga el código del repositorio
+            # 1. Download the repository code
             - name: Checkout repository
               uses: actions/checkout@v3
 
-            # 2. Obtener el nombre del repositorio
+            # 2. Get the repository name
             - name: Get repository name
               run: echo "repo_name=$(basename ${{ github.repository }})" >> $GITHUB_ENV
 
-            # 3. Leer la versión del archivo .toc y convertir interface a game_versions
+            # 3. Read the version from the .toc file and convert interface to game_versions
             - name: Extract version and format game versions
               run: |
                   version=$(grep -Po "(?<=## Version: )\d+\.\d+\.\d+" ${{ env.repo_name }}.toc)
@@ -30,19 +30,24 @@ jobs:
                   echo "addon_version=$version" >> $GITHUB_ENV
                   echo "game_version=$game_version" >> $GITHUB_ENV
 
-            # 4. Crear el archivo ZIP con el formato "nombre-versión.zip"
+            # 4. Create a folder with the repository name and move addon files into it
+            - name: Prepare addon folder
+              run: |
+                  mkdir "${{ env.repo_name }}"
+                  rsync -av --progress ./ "${{ env.repo_name }}/" --exclude ".git*" --exclude ".github*" --exclude "README.md" --exclude "CHANGELOG.md"
+
+            # 5. Create the ZIP file with the format "name-version.zip"
             - name: Create addon ZIP
               run: |
-                  zip -r "${{ env.repo_name }}-${{ env.addon_version }}.zip" . \
-                    -x ".git*" ".github*" "README.md" "CHANGELOG.md"
+                  zip -r "${{ env.repo_name }}-${{ env.addon_version }}.zip" "${{ env.repo_name }}"
 
-            # 5. Leer el contenido del archivo CHANGELOG.md
+            # 6. Read the content of the CHANGELOG.md file
             - name: Read CHANGELOG.md
               run: |
                   changelog=$(cat CHANGELOG.md)
                   echo "changelog=$changelog" >> $GITHUB_ENV
 
-            # 6. Subir el archivo ZIP a CurseForge
+            # 7. Upload the ZIP file to CurseForge
             - name: Upload to CurseForge
               uses: itsmeow/curseforge-upload@v3.1.2
               with:
