@@ -1,6 +1,6 @@
 # Map and Ping
 
-[<img src="https://img.shields.io/static/v1?label=curseforge&logo=curseforge&color=orange&message=install">](https://www.curseforge.com/wow/addons/map-and-ping)
+[<img src="https://img.shields.io/static/v1?label=curseforge&logo=curseforge&color=orange&message=install">](https://www.curseforge.com/wow/addons/mark-and-ping)
 
 ## Description
 
