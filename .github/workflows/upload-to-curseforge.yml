@@ -1,0 +1,50 @@
+name: Upload to CurseForge
+
+on:
+    push:
+        branches:
+            - main # Cambia si usas otra rama principal
+
+jobs:
+    upload-addon:
+        runs-on: ubuntu-latest
+
+        steps:
+            # 1. Descarga el código del repositorio
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            # 2. Obtener el nombre del repositorio
+            - name: Get repository name
+              run: echo "repo_name=$(basename ${{ github.repository }})" >> $GITHUB_ENV
+
+            # 3. Leer la versión del archivo .toc
+            - name: Extract version and interface from .toc
+              run: |
+                  version=$(grep -Po "(?<=## Version: )\d+\.\d+\.\d+" ${{ env.repo_name }}.toc)
+                  interface=$(grep -Po "(?<=## Interface: )\d+" ${{ env.repo_name }}.toc)
+                  echo "addon_version=$version" >> $GITHUB_ENV
+                  echo "interface_version=$interface" >> $GITHUB_ENV
+
+            # 4. Crear el archivo ZIP con el formato "nombre-versión.zip"
+            - name: Create addon ZIP
+              run: |
+                  zip -r "${{ env.repo_name }}-${{ env.addon_version }}.zip" . \
+                    --exclude "*/.git*" "*/README.md"
+
+            # 5. Obtener el mensaje del último commit como changelog
+            - name: Get commit message for changelog
+              run: echo "changelog=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+
+            # 6. Subir el archivo ZIP a CurseForge
+            - name: Upload to CurseForge
+              uses: itsmeow/curseforge-upload@v3.1.2
+              with:
+                  token: ${{ secrets.CURSEFORGE_API_KEY }}
+                  project_id: ${{ secrets.CURSEFORGE_PROJECT_ID }}
+                  game_endpoint: "wow"
+                  game_versions: ${{ env.interface_version }}
+                  file_path: "${{ env.repo_name }}-${{ env.addon_version }}.zip"
+                  changelog: "- ${{ env.changelog }}"
+                  changelog_type: markdown
+                  release_type: release
