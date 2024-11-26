@@ -43,7 +43,7 @@ jobs:
                   token: ${{ secrets.CURSEFORGE_API_KEY }}
                   project_id: ${{ secrets.CURSEFORGE_PROJECT_ID }}
                   game_endpoint: "wow"
-                  game_versions: "${{ env.interface_version }}"
+                  game_versions: "1.15.5"
                   file_path: "${{ env.repo_name }}-${{ env.addon_version }}.zip"
                   changelog: "- ${{ env.changelog }}"
                   changelog_type: markdown
