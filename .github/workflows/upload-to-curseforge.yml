@@ -34,7 +34,7 @@ jobs:
             - name: Create addon ZIP
               run: |
                   zip -r "${{ env.repo_name }}-${{ env.addon_version }}.zip" . \
-                    --exclude "*/.git*" "*/README.md" "*/CHANGELOG.md"
+                    -x ".git*" ".github*" "README.md" "CHANGELOG.md"
 
             # 5. Leer el contenido del archivo CHANGELOG.md
             - name: Read CHANGELOG.md
